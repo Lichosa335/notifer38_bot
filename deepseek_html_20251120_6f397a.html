@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShieldAuth - Умная защита паролей</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a3a7c);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4CAF50;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #4CAF50;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .form-input::placeholder {
+            color: #ccc;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #f57c00;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .status.success {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .status.error {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .status.info {
+            background: rgba(33, 150, 243, 0.3);
+        }
+
+        .password-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .password-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .password-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+
+        .device-option {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .trusted-device {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4CAF50;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .new-device {
+            background: rgba(255, 152, 0, 0.2);
+            border-left: 3px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .user-menu {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .demo-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Регистрация -->
+    <div id="registerScreen" class="container">
+        <h1>🛡️ ShieldAuth - Регистрация</h1>
+        
+        <div class="form-group">
+            <label>Придумайте логин:</label>
+            <input type="text" id="registerUsername" class="form-input" placeholder="Введите ваш логин">
+        </div>
+
+        <div class="password-section">
+            <h2>🔒 Основной пароль</h2>
+            <p style="margin-bottom: 15px; opacity: 0.8;">Используется для входа на новых устройствах</p>
+            <input type="password" id="registerMasterPassword" class="form-input" placeholder="Создайте основной пароль">
+        </div>
+
+        <div class="password-section">
+            <h2>🔑 Постоянный пароль</h2>
+            <p style="margin-bottom: 15px; opacity: 0.8;">Используется для быстрого входа на ваших устройствах</p>
+            <input type="password" id="registerSessionPassword" class="form-input" placeholder="Создайте постоянный пароль">
+        </div>
+
+        <button onclick="register()" class="btn btn-primary">Зарегистрироваться</button>
+        
+        <div class="demo-info">
+            <strong>💡 Подсказка:</strong><br>
+            • Логин может быть любым<br>
+            • Пароли должны быть не менее 4 символов<br>
+            • После регистрации вы сможете войти с любого устройства
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="showLogin()" class="btn btn-secondary">Уже есть аккаунт? Войти</button>
+        </div>
+
+        <div id="registerStatus" class="status"></div>
+    </div>
+
+    <!-- Вход -->
+    <div id="loginScreen" class="container hidden">
+        <h1>🛡️ ShieldAuth - Вход</h1>
+        
+        <div class="form-group">
+            <label>Ваш логин:</label>
+            <input type="text" id="loginUsername" class="form-input" placeholder="Введите ваш логин">
+        </div>
+
+        <div class="form-group">
+            <label>Пароль:</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Введите пароль">
+        </div>
+
+        <div class="device-option">
+            <label>
+                <input type="checkbox" id="trustDevice"> ✅ Это моё постоянное устройство
+            </label>
+            <p style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">
+                Если галочка стоит - используйте постоянный пароль<br>
+                Если галочки нет - используйте основной пароль
+            </p>
+        </div>
+
+        <button onclick="login()" class="btn btn-primary">Войти в систему</button>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="showRegister()" class="btn btn-secondary">Создать новый аккаунт</button>
+        </div>
+
+        <div id="loginStatus" class="status"></div>
+    </div>
+
+    <!-- Главное приложение -->
+    <div id="mainApp" class="container hidden">
+        <div class="user-menu">
+            <div style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px; display: inline-block;">
+                👤 <span id="currentUser">user</span>
+            </div>
+        </div>
+
+        <h1>🛡️ Управление аккаунтом</h1>
+
+        <!-- Информация об устройстве -->
+        <div id="deviceInfo" class="device-option">
+            <!-- Информация будет здесь -->
+        </div>
+
+        <!-- Управление паролями -->
+        <div class="password-section">
+            <h2>🔐 Смена паролей</h2>
+            
+            <div class="password-display">
+                <input type="password" id="newMasterPassword" class="password-input" placeholder="Новый основной пароль">
+                <button onclick="toggleVisibility('newMasterPassword')" class="btn">👁️</button>
+            </div>
+            <button onclick="changeMasterPassword()" class="btn btn-primary">Сменить основной пароль</button>
+
+            <div style="margin: 15px 0;"></div>
+
+            <div class="password-display">
+                <input type="password" id="newSessionPassword" class="password-input" placeholder="Новый постоянный пароль">
+                <button onclick="toggleVisibility('newSessionPassword')" class="btn">👁️</button>
+            </div>
+            <button onclick="changeSessionPassword()" class="btn btn-primary">Сменить постоянный пароль</button>
+        </div>
+
+        <!-- Тест входа с другого устройства -->
+        <div class="password-section">
+            <h2>🧪 Тест системы</h2>
+            <button onclick="simulateOtherDevice()" class="btn btn-secondary">Сымитировать вход с нового устройства</button>
+            <button onclick="showAccountData()" class="btn btn-secondary">Показать данные аккаунта</button>
+        </div>
+
+        <!-- Выход -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="logout()" class="btn btn-danger">Выйти из системы</button>
+        </div>
+
+        <div id="appStatus" class="status"></div>
+    </div>
+
+    <script>
+        // Имитация базы данных (в реальном приложении это будет сервер)
+        const database = {
+            users: {},
+            devices: {}
+        };
+
+        // Текущий пользователь
+        let currentUser = null;
+        let currentDeviceId = null;
+
+        // Инициализация
+        function init() {
+            // Загрузка данных из localStorage (имитация базы)
+            const savedDB = localStorage.getItem('shieldAuth_database');
+            if (savedDB) {
+                Object.assign(database, JSON.parse(savedDB));
+            }
+            
+            currentDeviceId = getDeviceId();
+            console.log('База данных:', database);
+        }
+
+        // Генерация ID устройства
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('currentDeviceId');
+            if (!deviceId) {
+                deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('currentDeviceId', deviceId);
+            }
+            return deviceId;
+        }
+
+        // Сохранение в базу
+        function saveToDatabase() {
+            localStorage.setItem('shieldAuth_database', JSON.stringify(database));
+        }
+
+        // Регистрация
+        function register() {
+            const username = document.getElementById('registerUsername').value;
+            const masterPassword = document.getElementById('registerMasterPassword').value;
+            const sessionPassword = document.getElementById('registerSessionPassword').value;
+            const status = document.getElementById('registerStatus');
+
+            if (!username || !masterPassword || !sessionPassword) {
+                showStatus('registerStatus', 'Заполните все поля', 'error');
+                return;
+            }
+
+            if (masterPassword.length < 4 || sessionPassword.length < 4) {
+                showStatus('registerStatus', 'Пароли должны быть не менее 4 символов', 'error');
+                return;
+            }
+
+            if (database.users[username]) {
+                showStatus('registerStatus', 'Этот логин уже занят', 'error');
+                return;
+            }
+
+            // Создаем пользователя
+            database.users[username] = {
+                masterPassword: masterPassword,
+                sessionPassword: sessionPassword,
+                trustedDevices: [],
+                createdAt: new Date().toISOString()
+            };
+
+            saveToDatabase();
+
+            showStatus('registerStatus', '✅ Аккаунт успешно создан! Теперь войдите в систему', 'success');
+            
+            // Очищаем поля
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerMasterPassword').value = '';
+            document.getElementById('registerSessionPassword').value = '';
+
+            // Показываем экран входа
+            setTimeout(() => {
+                showLogin();
+            }, 2000);
+        }
+
+        // Вход
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const trustDevice = document.getElementById('trustDevice').checked;
+            const status = document.getElementById('loginStatus');
+
+            if (!username || !password) {
+                showStatus('loginStatus', 'Заполните все поля', 'error');
+                return;
+            }
+
+            const user = database.users[username];
+            if (!user) {
+                showStatus('loginStatus', 'Аккаунт не найден', 'error');
+                return;
+            }
+
+            const deviceId = currentDeviceId;
+            let isValid = false;
+            let message = '';
+            let passwordType = '';
+
+            // Проверяем, доверенное ли это устройство
+            const isTrustedDevice = user.trustedDevices.includes(deviceId);
+
+            if (trustDevice && isTrustedDevice) {
+                // Проверка постоянного пароля для доверенного устройства
+                isValid = password === user.sessionPassword;
+                message = isValid ? '✅ Вход выполнен с постоянным паролем!' : '❌ Неверный постоянный пароль!';
+                passwordType = 'постоянный';
+            } else {
+                // Проверка основного пароля для нового устройства
+                isValid = password === user.masterPassword;
+                message = isValid ? '✅ Вход выполнен с основным паролем!' : '❌ Неверный основной пароль!';
+                passwordType = 'основной';
+                
+                // Если пароль верный и пользователь хочет доверять устройству
+                if (isValid && trustDevice) {
+                    user.trustedDevices.push(deviceId);
+                    saveToDatabase();
+                }
+            }
+
+            if (isValid) {
+                currentUser = username;
+                document.getElementById('currentUser').textContent = username;
+                
+                // Показываем главное приложение
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                
+                showStatus('loginStatus', message, 'success');
+                updateDeviceInfo();
+                
+                console.log(`Успешный вход: ${username} с ${passwordType} паролем`);
+            } else {
+                showStatus('loginStatus', message, 'error');
+            }
+        }
+
+        // Обновление информации об устройстве
+        function updateDeviceInfo() {
+            const deviceInfo = document.getElementById('deviceInfo');
+            const user = database.users[currentUser];
+            const isTrusted = user.trustedDevices.includes(currentDeviceId);
+            
+            deviceInfo.innerHTML = `
+                <div class="${isTrusted ? 'trusted-device' : 'new-device'}">
+                    <strong>ID устройства:</strong> ${currentDeviceId}<br>
+                    <strong>Статус:</strong> ${isTrusted ? '✅ Доверенное устройство' : '🆕 Новое устройство'}<br>
+                    <strong>Требуемый пароль:</strong> ${isTrusted ? 'Постоянный' : 'Основной'}<br>
+                    <strong>Доверенных устройств:</strong> ${user.trustedDevices.length}
+                </div>
+            `;
+        }
+
+        // Смена паролей
+        function changeMasterPassword() {
+            const newPassword = document.getElementById('newMasterPassword').value;
+            
+            if (!newPassword || newPassword.length < 4) {
+                showStatus('appStatus', 'Пароль должен быть не менее 4 символов', 'error');
+                return;
+            }
+
+            database.users[currentUser].masterPassword = newPassword;
+            saveToDatabase();
+            
+            showStatus('appStatus', '✅ Основной пароль изменен!', 'success');
+            document.getElementById('newMasterPassword').value = '';
+        }
+
+        function changeSessionPassword() {
+            const newPassword = document.getElementById('newSessionPassword').value;
+            
+            if (!newPassword || newPassword.length < 4) {
+                showStatus('appStatus', 'Пароль должен быть не менее 4 символов', 'error');
+                return;
+            }
+
+            database.users[currentUser].sessionPassword = newPassword;
+            saveToDatabase();
+            
+            showStatus('appStatus', '✅ Постоянный пароль изменен!', 'success');
+            document.getElementById('newSessionPassword').value = '';
+        }
+
+        // Навигация
+        function showLogin() {
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('registerScreen').classList.remove('hidden');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginPassword').value = '';
+        }
+
+        // Вспомогательные функции
+        function toggleVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            setTimeout(() => {
+                element.textContent = '';
+                element.className = 'status';
+            }, 5000);
+        }
+
+        // Тестовые функции
+        function simulateOtherDevice() {
+            if (!currentUser) return;
+            
+            const user = database.users[currentUser];
+            const randomDeviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+            const isTrusted = user.trustedDevices.includes(randomDeviceId);
+            
+            alert(`🧪 Тест нового устройства:\n\n` +
+                  `ID устройства: ${randomDeviceId}\n` +
+                  `Статус: ${isTrusted ? 'Доверенное' : 'Новое'}\n` +
+                  `Требуемый пароль: ${isTrusted ? 'Постоянный' : 'Основной'}\n\n` +
+                  `Основной пароль: ${user.masterPassword}\n` +
+                  `Постоянный пароль: ${user.sessionPassword}`);
+        }
+
+        function showAccountData() {
+            if (!currentUser) return;
+            
+            const user = database.users[currentUser];
+            alert(`📊 Данные аккаунта:\n\n` +
+                  `Логин: ${currentUser}\n` +
+                  `Основной пароль: ${user.masterPassword}\n` +
+                  `Постоянный пароль: ${user.sessionPassword}\n` +
+                  `Доверенные устройства: ${user.trustedDevices.length}\n` +
+                  `Создан: ${new Date(user.createdAt).toLocaleString()}`);
+        }
+
+        // Запуск при загрузке
+        init();
+    </script>
+</body>
+</html>
